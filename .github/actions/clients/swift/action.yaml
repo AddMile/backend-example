@@ -1,0 +1,73 @@
+name: Generate and Publish Swift client
+
+inputs:
+  output-dir:
+    description: 'Output directory for generated client'
+    required: true
+    default: './clients/swift'
+  github-token:
+    description: 'GitHub token'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup swift
+      uses: swift-actions/setup-swift@v2
+
+    - name: Install OpenAPI Generator CLI
+      run: npm install @openapitools/openapi-generator-cli -g
+      shell: bash
+
+    - name: Ensure the output directory exists
+      run: mkdir -p ${{ inputs.output-dir }}
+      shell: bash
+
+    - name: Set up Git user
+      run: |
+        git config --global init.defaultBranch main
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+      shell: bash
+
+    - name: Initialize the repository
+      working-directory: ${{ inputs.output-dir }}
+      run: git init
+      shell: bash
+
+    - name: Set up remote repository
+      working-directory: ${{ inputs.output-dir }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        git remote add backend-client-swift https://x-access-token:${GITHUB_TOKEN}@github.com/example/backend-client-swift.git
+      shell: bash
+
+    - name: Pull the latest changes from the remote repository
+      working-directory: ${{ inputs.output-dir }}
+      run: |
+        git pull backend-client-swift main --rebase
+      shell: bash
+
+    - name: Generate Swift client
+      run: |
+        mkdir -p ${{ inputs.output-dir }}
+        openapi-generator-cli generate \
+          -i ./doc/api/api.yaml \
+          -g swift5 \
+          -o ${{ inputs.output-dir }} \
+          -p projectName=ExampleBackendClient
+      shell: bash
+
+    - name: Commit and push generated Swift code
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        git add .
+        git commit -m "feat: generate swift client" || echo "No changes to commit"
+        git push backend-client-swift main
+      working-directory: ${{ inputs.output-dir }}
+      shell: bash

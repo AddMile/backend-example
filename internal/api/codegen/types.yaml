@@ -1,0 +1,4 @@
+package: gen
+generate:
+  models: true
+output: ../../internal/api/codegen/types.gen.go

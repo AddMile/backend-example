@@ -1,0 +1,109 @@
+openapi: 3.0.3
+info:
+  title: Example Backend Worker
+  version: 1.0.11
+tags:
+  - name: event
+  
+paths:
+  /v1/email-user-created:
+    post:
+      tags:
+        - event
+      summary: user created
+      operationId: EmailUserCreated
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+              
+      responses:
+        204:
+          $ref: '#/components/responses/204NoContent'
+        400:
+          $ref: '#/components/responses/400BadRequest'
+        500:
+          $ref: '#/components/responses/500InternalServerError'
+
+components:
+
+  responses:
+    204NoContent:
+      description: 'request processed'
+    400BadRequest:
+      description: 'bad response'
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - code
+              - error
+            properties:
+              code:
+                type: integer
+                default: 400
+              error:
+                type: string
+                default: 'unexpected'
+    500InternalServerError:
+      description: 'internal server error'
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - code
+              - error
+            properties:
+              code:
+                type: integer
+                default: 500
+              error:
+                type: string
+                default: 'server error'
+                
+
+  schemas:
+    Attributes:
+      type: object
+      additionalProperties:
+        type: string
+      
+    Message:
+      type: object
+      required:
+        - data
+        - messageId
+        - publishTime
+      properties:
+        data:
+          type: string
+          example: 'SGVsbG8gQ2xvdWQgUHViL1N1YiEgSGVyZSBpcyBteSBtZXNzYWdlIQ=='
+        messageId:
+          type: string
+          example: '2070443601311540'
+        publishTime:
+          type: string
+          format: date-time
+          example: '2021-02-26T19:13:55.749Z'
+        attributes:
+          $ref: '#/components/schemas/Attributes'
+        
+    Request:
+      type: object
+      required:
+        - message
+        - deliveryAttempt
+        - subscription
+      properties:
+        message:
+          $ref: '#/components/schemas/Message'
+        deliveryAttempt:
+          type: number
+          example: 5
+        subscription:
+          type: string
+          example: 'projects/myproject/subscriptions/mysubscription'
+    

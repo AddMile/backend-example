@@ -1,0 +1,51 @@
+name: Build and Push to GCR
+
+inputs:
+  project:
+    required: true
+    description: 'GCP project'
+  service_account:
+    required: true
+    description: 'GCP service account'
+  service:
+    required: true
+    description: 'api or worker'
+
+runs:
+  using: composite
+  steps:
+  - name: Checkout code
+    uses: actions/checkout@v4
+
+  - name: Set up QEMU
+    uses: docker/setup-qemu-action@v3
+
+  - name: Set up Docker Buildx
+    uses: docker/setup-buildx-action@v3
+
+  - name: Login to Google Cloud
+    uses: google-github-actions/auth@v2
+    with:
+      credentials_json: ${{ inputs.service_account }}
+
+  - name: Configure Docker to use gcloud as a credential helper
+    run: |
+      gcloud auth configure-docker us-central1-docker.pkg.dev
+    shell: bash
+
+  - name: Revision
+    id:  revision
+    run: |
+      echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      echo "image=us-central1-docker.pkg.dev/${{ inputs.project }}/backend/${{ inputs.service }}" >> $GITHUB_OUTPUT
+    shell: bash
+
+  - name: Build and push ${{ inputs.service }}
+    uses: docker/build-push-action@v6
+    with:
+      file:
+          build/Dockerfile.${{ inputs.service }}
+      push: true
+      tags: |
+        ${{ steps.revision.outputs.image}}:latest
+        ${{ steps.revision.outputs.image}}:${{ steps.revision.outputs.sha_short }}

@@ -1,0 +1,19 @@
+runs:
+  using: composite
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: stable
+
+    - name: Install dependencies
+      run: go mod download
+      shell: bash
+
+    - name: Run tests
+      run: go test -race ./...
+      shell: bash
+

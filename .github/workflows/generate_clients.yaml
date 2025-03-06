@@ -1,0 +1,40 @@
+name: Generate Clients
+
+on:
+  release:
+    types: created
+    paths:
+      - './doc/api/api.yaml'
+    
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  swift-client:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate and publish 
+        uses: ./.github/actions/clients/swift
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+
+  typescript-client:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Generate and publish
+      uses: ./.github/actions/clients/typescript
+      with:
+        github-token: ${{ secrets.GH_TOKEN }}
+

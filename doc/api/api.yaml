@@ -1,0 +1,149 @@
+openapi: 3.0.3
+info:
+  title: Example Backend API
+  version: 1.0.0
+tags:
+  - name: user
+paths:
+  /v1/users:
+    put:
+      tags:
+        - user
+      summary: Upsert user
+      operationId: UpsertUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - language
+                - conversion
+              properties:
+                name:
+                  $ref: '#/components/schemas/Text'
+                email:
+                  $ref: '#/components/schemas/Email'
+                language:
+                  $ref: '#/components/schemas/Language'
+      responses:
+        201:
+          description: 'user updated or created'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    $ref: '#/components/schemas/UUID'
+        400:
+          $ref: '#/components/responses/400BadRequest'
+        500:
+          $ref: '#/components/responses/500InternalServerError'
+    get:
+      tags:
+        - user
+      summary: Get user
+      operationId: GetUser
+      responses:
+        200:
+          description: user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          $ref: '#/components/responses/400BadRequest'
+        500:
+          $ref: '#/components/responses/500InternalServerError'
+  
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      description: id of user
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+
+  responses:
+    201Created:
+      description: 'entity created'
+    400BadRequest:
+      description: 'bad response'
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - code
+              - error
+            properties:
+              code:
+                type: integer
+                default: 400
+              error:
+                type: string
+                default: 'unexpected'
+    500InternalServerError:
+      description: 'internal server error'
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - code
+              - error
+            properties:
+              code:
+                type: integer
+                default: 500
+              error:
+                type: string
+                default: 'server error'
+
+  schemas:
+    UUID:
+      type: string
+      format: uuid
+    Text:
+      type: string
+      example: 'some text'
+    DateTime:
+      type: string
+      format: date-time
+    Email:
+      type: string
+      example: 'johndoe@gmail.com'
+    Language:
+      type: string
+      example: 'en'
+    User:
+      type: object
+      required:
+        - id
+        - language
+        - createdAt
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        email:
+          $ref: '#/components/schemas/Email'
+        language:
+          $ref: '#/components/schemas/Language'
+        createdAt:
+          $ref: '#/components/schemas/DateTime'
+    

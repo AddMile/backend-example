@@ -1,0 +1,69 @@
+linters:
+  disable-all: true
+  enable:
+    - asciicheck
+    - bodyclose
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - dogsled
+    - durationcheck
+    - errorlint
+    - exhaustive
+    - copyloopvar
+    - forbidigo
+    - forcetypeassert
+    - gci
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gofmt
+    - goimports
+    - makezero
+    - misspell
+    - nakedret
+    - nestif
+    - nlreturn
+    - noctx
+    - tparallel
+    - predeclared
+    - stylecheck
+    - unconvert
+    - unparam
+    - wastedassign
+    - whitespace
+    - typecheck
+linters-settings:
+  wrapcheck:
+    # An array of strings that specify substrings of signatures to ignore.
+    # If this set, it will override the default set of ignored signatures.
+    # See https://github.com/tomarrell/wrapcheck#configuration for more information.
+    ignoreSigs:
+      - .Errorf(
+      - errors.New(
+      - errors.Unwrap(
+      - .Wrap(
+      - .Wrapf(
+      - .WithMessage(
+      - .WithMessagef(
+      - .WithStack(
+    ignoreSigRegexps:
+      - \.New.*Error\(
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/AddMile/backend/internal/kit)
+      - prefix(github.com/AddMile/backend)
+issues:
+  exclude-rules:
+    - path: (.+)_test.go
+      linters:
+        - wsl
+        - funlen
+        - dupl
+        - err113

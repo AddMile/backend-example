@@ -1,0 +1,51 @@
+name: Generate and Publish TypeScript client
+
+inputs:
+  output-dir:
+    description: 'Output directory for generated client'
+    required: true
+    default: './clients/typescript'
+  github-token:
+    description: 'GitHub token for npm registry'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: ./clients/typescript/package-lock.json
+
+    - name: Install OpenAPI Generator CLI
+      run: npm install @openapitools/openapi-generator-cli -g
+      shell: bash
+
+    - name: Generate TypeScript client
+      run: |
+        mkdir -p ${{ inputs.output-dir }}
+        openapi-generator-cli generate \
+          -i ./doc/api/api.yaml \
+          -g typescript-axios \
+          -o ${{ inputs.output-dir }} \
+      shell: bash
+
+    - name: Configure npm for publishing
+      working-directory: ${{ inputs.output-dir }}
+      run: |
+        echo "//npm.pkg.github.com/:_authToken=${{ inputs.github-token }}" > ~/.npmrc
+        echo "@example:registry=https://npm.pkg.github.com/" >> ~/.npmrc
+      shell: bash
+
+    - name: Publish to npm
+      working-directory: ${{ inputs.output-dir }}
+      run: |
+        npm publish --access restricted
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.github-token }}
+      shell: bash
